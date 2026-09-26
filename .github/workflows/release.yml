@@ -1,0 +1,48 @@
+# Build the Windows .exe and publish it as a GitHub Release when a version tag
+# (v1.0.0, v1.2.3-beta, ...) is pushed. The build is the same one a developer
+# runs locally: tools/make_release.py -> dist/mouse_tray/.
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write # create the release and upload its asset
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+
+      # VERSION in config.py is the single source of the runtime version and is
+      # stamped into the exe; refuse to publish a release that disagrees with it.
+      - name: Check tag matches VERSION
+        shell: bash
+        run: |
+          tag="${GITHUB_REF_NAME#v}"
+          version="$(uv run --no-project python -c 'import ast, pathlib; t = ast.parse(pathlib.Path("mouse_tray/config.py").read_text(encoding="utf-8")); print(next(n.value.value for n in t.body if isinstance(n, ast.Assign) and getattr(n.targets[0], "id", "") == "VERSION"))')"
+          if [ "$tag" != "$version" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME does not match VERSION = \"$version\" in mouse_tray/config.py"
+            exit 1
+          fi
+
+      - name: Build
+        run: uv run --extra build python tools/make_release.py
+
+      - name: Package
+        shell: pwsh
+        run: Compress-Archive -Path dist/mouse_tray -DestinationPath "mouse_tray-$env:GITHUB_REF_NAME-windows.zip"
+
+      - name: Publish release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: mouse_tray-${{ github.ref_name }}-windows.zip
+          generate_release_notes: true
+          prerelease: ${{ contains(github.ref_name, '-') }}
