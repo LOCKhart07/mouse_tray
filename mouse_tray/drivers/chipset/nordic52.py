@@ -53,7 +53,14 @@ class Nordic52Driver(HidDriver):
         _model("ATK A9 Ultimate", 0x373B, 0x11D9, 0x11B6),
         _model("VXE MAD R", 0x373B, 0x104D, 0x103F),
         _model("VXE MAD R Major Plus", 0x373B, 0x1040, 0x104C),
-        _model("VXE R1 Pro Max", 0x3554, 0xF58A, 0xF58C),
+        # The R1 receiver is an ATK id, but its cable enumerates under the other
+        # VID as 3554:F58F -- the R1 SE+'s wired PID, so a cabled R1 is caught
+        # (and named) by that row. A model row has one VID, so this one is
+        # receiver-only.
+        _model("VXE R1", 0x373B, 0x1085, 0x1085),
+        # "VXE NordicMouse 1K Dongle" F58A ships with both the R1 Pro and the
+        # R1 Pro Max; one row, since the key (VID/PID) can't tell them apart.
+        _model("VXE R1 Pro / R1 Pro Max", 0x3554, 0xF58A, 0xF58C),
         _model("VXE R1 SE+", 0x3554, 0xF58E, 0xF58F),
         _model("VGN F1 Pro", 0x3554, 0xF503, 0xF502),
         _model("VGN F2 Pro Max", 0x3554, 0xFB3E, 0xFB3D),

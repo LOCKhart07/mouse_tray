@@ -11,7 +11,8 @@ file, no changes to the UI or polling code.
 ## Supported models
 
 - **ATK / VXE / VGN:** ATK F1 Ultimate, ATK A9 Ultimate, ATK Zero, VXE MAD R,
-  VXE MAD R Major Plus, VXE R1 Pro Max, VXE R1 SE+, VGN F1 Pro, VGN F2 Pro Max
+  VXE MAD R Major Plus, VXE R1, VXE R1 Pro, VXE R1 Pro Max, VXE R1 SE+, VGN F1 Pro,
+  VGN F2 Pro Max
 - **Zaopin:** Z2 Mini
 - **Scyrox:** V8
 - **Dareu:** A950 Air
@@ -75,6 +76,16 @@ Modules the app cannot reach — Pillow's codecs, `ssl` with its libcrypto/libss
 `wx.html` and the like — are dropped through the `EXCLUDES` list in
 [`tools/make_release.py`](tools/make_release.py), which also records what must
 stay. A new dependency is reason to revisit that list.
+
+**Releases** are built by CI: pushing a version tag runs the same build on
+Windows ([`.github/workflows/release.yml`](.github/workflows/release.yml)) and
+attaches `mouse_tray-<tag>-windows.zip` to a GitHub Release. The tag must match
+`VERSION` in [`mouse_tray/config.py`](mouse_tray/config.py), or the job fails
+rather than ship an exe stamped with a different version:
+
+```sh
+git tag v0.1.0 && git push origin v0.1.0
+```
 
 ## Multiple mice
 
